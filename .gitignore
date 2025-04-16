@@ -1,0 +1,42 @@
+# Ignore OS/system folders
+.DS_Store
+Thumbs.db
+
+# Ignore your entire user folder
+C:/Users/rakes/*
+
+# Ignore Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Anaconda and Conda environments
+.conda/
+*.ipynb_checkpoints
+
+# Ignore Databricks and AWS configs
+.databrickscfg
+.aws/
+.keyring/
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore Docker files
+.token_seed
+.token_seed.lock
+daemon.json
+config.json
+
+# Ignore drivers and executables
+chromedriver.exe
+
+# Ignore everything under home directory
+/C:/Users/rakes/*
+!/C:/Users/rakes/spinny_scraping/**
+
+*.log
+*.exe
+*.json
+*.cfg
+*.env
