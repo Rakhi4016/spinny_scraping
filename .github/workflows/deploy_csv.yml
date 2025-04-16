@@ -30,17 +30,17 @@ jobs:
       - name: 🔍 Test Snowflake Connection
         run: |
           python <<EOF
-import snowflake.connector, os
-conn = snowflake.connector.connect(
-    user=os.getenv('SF_USER'),
-    password=os.getenv('SF_PASSWORD'),
-    account=os.getenv('SF_ACCOUNT'),
-    warehouse=os.getenv('SF_WAREHOUSE'),
-    role=os.getenv('SF_ROLE')
-)
-print('✅ Snowflake connection successful!')
-conn.close()
-EOF
+          import snowflake.connector, os
+          conn = snowflake.connector.connect(
+              user=os.getenv('SF_USER'),
+              password=os.getenv('SF_PASSWORD'),
+              account=os.getenv('SF_ACCOUNT'),
+              warehouse=os.getenv('SF_WAREHOUSE'),
+              role=os.getenv('SF_ROLE')
+          )
+          print('✅ Snowflake connection successful!')
+          conn.close()
+          EOF
 
       - name: 🚀 Run scraper and upload CSV to stage
         run: python scraper.py
