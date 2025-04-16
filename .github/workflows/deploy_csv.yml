@@ -1,14 +1,18 @@
-name: Scrape Spinny & Upload to Databricks
+name: Scrape Spinny and Upload Dated CSV
 
 on:
-  workflow_dispatch:  # or schedule: for auto-run
+  workflow_dispatch:
 
 jobs:
   scrape-and-upload:
     runs-on: ubuntu-latest
 
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
     steps:
-    - name: Checkout repo
+    - name: Checkout Repo
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -19,13 +23,13 @@ jobs:
     - name: Install dependencies
       run: pip install requests pandas databricks-cli
 
+    - name: Set DATE_TAG environment variable
+      run: echo "DATE_TAG=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
     - name: Run scraper
       run: python scraper.py
 
-    - name: Configure Databricks CLI
+    - name: Upload CSV to Workspace
       run: |
-        databricks configure --token <<< "${{ secrets.DATABRICKS_HOST }}\n${{ secrets.DATABRICKS_TOKEN }}"
-
-    - name: Upload CSV to Volume
-      run: |
-        databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/Volumes/dev_blue/bronze/used_cars_ingestion/spinny_data.csv
+        FILE_NAME="spinny_data_${{ env.DATE_TAG }}.csv"
+        databricks workspace import --language PYTHON --format SOURCE "$FILE_NAME" "/Shared/$FILE_NAME"
