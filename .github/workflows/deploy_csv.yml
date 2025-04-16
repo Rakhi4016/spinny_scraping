@@ -30,4 +30,4 @@ jobs:
       run: databricks workspace list
 
     - name: Upload CSV to Databricks FileStore
-      run: databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/FileStore/spinny_data.csv
+      run: databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/FileStore/spinny_temp_upload.csv
