@@ -1,10 +1,7 @@
-name: Scrape Spinny Used Cars & Upload to Databricks
+name: Scrape Spinny & Upload to Databricks (Community Edition)
 
 on:
-  workflow_dispatch:  # Allows manual trigger
-  # Uncomment below to run daily at 2 AM UTC
-  # schedule:
-  #   - cron: "0 2 * * *"
+  workflow_dispatch:  # manual trigger
 
 jobs:
   scrape-and-upload:
@@ -15,7 +12,7 @@ jobs:
       DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
     steps:
-    - name: Checkout Code
+    - name: Checkout Repository
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -23,12 +20,14 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install Dependencies
+    - name: Install dependencies
       run: pip install requests pandas databricks-cli
 
-    - name: Run Scraper Script
+    - name: Run Python Scraper
       run: python scraper.py
 
-    - name: Upload CSV to Databricks Volume
-      run: |
-        databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/FileStore/spinny_data.csv
+    - name: Test Databricks CLI Auth
+      run: databricks workspace list
+
+    - name: Upload CSV to Databricks FileStore
+      run: databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/FileStore/spinny_data.csv
