@@ -26,5 +26,21 @@ jobs:
     - name: Install dependencies
       run: pip install requests pandas snowflake-connector-python
 
+    - name: Test Snowflake Connection
+      run: |
+        python -c "
+import snowflake.connector, os
+conn = snowflake.connector.connect(
+    user=os.getenv('SF_USER'),
+    password=os.getenv('SF_PASSWORD'),
+    account=os.getenv('SF_ACCOUNT'),
+    warehouse=os.getenv('SF_WAREHOUSE'),
+    role=os.getenv('SF_ROLE')
+)
+print('✅ Snowflake connection successful!')
+conn.close()
+"
+  
+
     - name: Run scraper and upload CSV
       run: python scraper.py
