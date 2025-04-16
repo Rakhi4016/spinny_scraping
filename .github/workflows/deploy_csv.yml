@@ -30,4 +30,5 @@ jobs:
       run: databricks workspace list
 
     - name: Upload CSV as Workspace File
-      run: databricks workspace import --language AUTO --format SOURCE spinny_temp_upload.csv /Shared/spinny_temp_upload.csv
+      run: databricks workspace import --language PYTHON --format SOURCE spinny_temp_upload.csv /Shared/spinny_temp_upload.csv
+
