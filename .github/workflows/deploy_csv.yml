@@ -29,7 +29,7 @@ jobs:
 
       - name: 🔍 Test Snowflake Connection
         run: |
-          python -c "
+          python <<EOF
 import snowflake.connector, os
 conn = snowflake.connector.connect(
     user=os.getenv('SF_USER'),
@@ -40,7 +40,7 @@ conn = snowflake.connector.connect(
 )
 print('✅ Snowflake connection successful!')
 conn.close()
-"
+EOF
 
       - name: 🚀 Run scraper and upload CSV to stage
         run: python scraper.py
