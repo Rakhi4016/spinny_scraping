@@ -15,20 +15,21 @@ jobs:
       SF_ROLE: ${{ secrets.SF_ROLE }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.12
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
 
-    - name: Install dependencies
-      run: pip install requests pandas snowflake-connector-python
+      - name: 📦 Install Python dependencies
+        run: |
+          pip install requests pandas snowflake-connector-python
 
-    - name: Test Snowflake Connection
-      run: |
-        python -c "
+      - name: 🔍 Test Snowflake Connection
+        run: |
+          python -c "
 import snowflake.connector, os
 conn = snowflake.connector.connect(
     user=os.getenv('SF_USER'),
@@ -40,7 +41,6 @@ conn = snowflake.connector.connect(
 print('✅ Snowflake connection successful!')
 conn.close()
 "
-  
 
-    - name: Run scraper and upload CSV
-      run: python scraper.py
+      - name: 🚀 Run scraper and upload CSV to stage
+        run: python scraper.py
