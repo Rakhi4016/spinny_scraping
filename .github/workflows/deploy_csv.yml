@@ -31,4 +31,4 @@ jobs:
 
     - name: Upload CSV to Databricks Volume
       run: |
-        databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/Volumes/dev_blue/bronze/used_cars_ingestion/spinny_data.csv
+        databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/FileStore/spinny_data.csv
