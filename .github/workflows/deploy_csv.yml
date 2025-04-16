@@ -29,5 +29,5 @@ jobs:
     - name: Test Databricks CLI Auth
       run: databricks workspace list
 
-    - name: Upload CSV to Databricks FileStore
-      run: databricks fs cp --overwrite spinny_temp_upload.csv dbfs:/FileStore/spinny_temp_upload.csv
+    - name: Upload CSV as Workspace File
+      run: databricks workspace import --language AUTO --format SOURCE spinny_temp_upload.csv /Shared/spinny_temp_upload.csv
