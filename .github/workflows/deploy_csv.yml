@@ -1,4 +1,4 @@
-name: Scrape and Upload to Snowflake (SnowSQL Connection Test)
+name: Scrape and Upload to Snowflake (No Table Creation)
 
 on:
   workflow_dispatch:
@@ -26,21 +26,5 @@ jobs:
     - name: Install dependencies
       run: pip install requests pandas snowflake-connector-python
 
-    - name: ✅ Install SnowSQL CLI
-      run: |
-        curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-linux_x86_64.tar.gz
-        tar -xvzf snowsql-linux_x86_64.tar.gz
-        ./snowsql-*/install.sh
-
-    - name: 🔍 Test Snowflake Connection
-      env:
-        SNOWSQL_USER: ${{ secrets.SF_USER }}
-        SNOWSQL_PWD: ${{ secrets.SF_PASSWORD }}
-        SNOWSQL_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-        SNOWSQL_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-        SNOWSQL_ROLE: ${{ secrets.SF_ROLE }}
-      run: |
-        ~/.snowsql/snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -r $SNOWSQL_ROLE -w $SNOWSQL_WAREHOUSE -q "SELECT CURRENT_VERSION();"
-
-    - name: 🚀 Run scraper and upload CSV
+    - name: Run scraper and upload CSV
       run: python scraper.py
