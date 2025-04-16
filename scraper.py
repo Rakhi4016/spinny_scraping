@@ -1,14 +1,15 @@
 import requests
 import pandas as pd
 from datetime import datetime
+import os
+import snowflake.connector
 
-# API Setup
+# Step 1: Scrape from Spinny API
 base_url = "https://api.spinny.com/v3/api/listing/v3/"
 headers = {"User-Agent": "Mozilla/5.0"}
 page = 1
 all_records = []
 
-# Scrape Pages
 while True:
     params = {
         "city": "hyderabad", "product_type": "cars", "category": "used",
@@ -17,12 +18,11 @@ while True:
         "active_banner": "true", "is_max_certified": "0"
     }
 
-    response = requests.get(base_url, params=params, headers=headers)
-    if response.status_code != 200:
-        print(f"❌ API error on page {page}")
+    res = requests.get(base_url, params=params, headers=headers)
+    if res.status_code != 200:
         break
 
-    cars = response.json().get("results", [])
+    cars = res.json().get("results", [])
     if not cars:
         break
 
@@ -41,14 +41,39 @@ while True:
             "emi_per_month": car.get("emi"),
             "ingested_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
-
-    print(f"✅ Page {page} scraped")
+    print(f"page {page} scraped")
     page += 1
 
-# Save CSV with today's date
-today_str = datetime.today().strftime("%Y-%m-%d")
-filename = f"spinny_data_{today_str}.csv"
-
+# Step 2: Save CSV with today's date
+today = datetime.today().strftime('%Y-%m-%d')
+filename = f"spinny_data_{today}.csv"
 df = pd.DataFrame(all_records)
 df.to_csv(filename, index=False)
-print(f"💾 CSV saved as: {filename}")
+print(f"✅ CSV saved as: {filename}")
+
+# Step 3: Upload to Snowflake (auto-create DB, schema, stage only)
+conn = snowflake.connector.connect(
+    user=os.getenv("SF_USER"),
+    password=os.getenv("SF_PASSWORD"),
+    account=os.getenv("SF_ACCOUNT"),
+    warehouse=os.getenv("SF_WAREHOUSE"),
+    role=os.getenv("SF_ROLE")
+)
+
+cursor = conn.cursor()
+
+# Auto-create DB and Schema
+cursor.execute("CREATE DATABASE IF NOT EXISTS SPINNY_DB")
+cursor.execute("USE DATABASE SPINNY_DB")
+cursor.execute("CREATE SCHEMA IF NOT EXISTS bronze")
+cursor.execute("USE SCHEMA bronze")
+
+# Auto-create stage
+cursor.execute("CREATE STAGE IF NOT EXISTS used_cars_stage")
+
+# Upload CSV to stage
+put_sql = f"PUT file://{filename} @used_cars_stage AUTO_COMPRESS=TRUE OVERWRITE=TRUE"
+cursor.execute(put_sql)
+print(f"📤 Uploaded {filename} to @SPINNY_DB.bronze.used_cars_stage ✅")
+
+conn.close()

@@ -1,35 +1,46 @@
-name: Scrape Spinny and Upload Dated CSV
+name: Scrape and Upload to Snowflake (SnowSQL Connection Test)
 
 on:
   workflow_dispatch:
 
 jobs:
-  scrape-and-upload:
+  run-scraper:
     runs-on: ubuntu-latest
 
     env:
-      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      SF_USER: ${{ secrets.SF_USER }}
+      SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
+      SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+      SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+      SF_ROLE: ${{ secrets.SF_ROLE }}
 
     steps:
-    - name: Checkout Repo
+    - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: 3.10
 
     - name: Install dependencies
-      run: pip install requests pandas databricks-cli
+      run: pip install requests pandas snowflake-connector-python
 
-    - name: Set DATE_TAG environment variable
-      run: echo "DATE_TAG=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-    - name: Run scraper
-      run: python scraper.py
-
-    - name: Upload CSV to Workspace
+    - name: ✅ Install SnowSQL CLI
       run: |
-        FILE_NAME="spinny_data_${{ env.DATE_TAG }}.csv"
-        databricks workspace import --language PYTHON --format SOURCE "$FILE_NAME" "/Shared/$FILE_NAME"
+        curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-linux_x86_64.tar.gz
+        tar -xvzf snowsql-linux_x86_64.tar.gz
+        ./snowsql-*/install.sh
+
+    - name: 🔍 Test Snowflake Connection
+      env:
+        SNOWSQL_USER: ${{ secrets.SF_USER }}
+        SNOWSQL_PWD: ${{ secrets.SF_PASSWORD }}
+        SNOWSQL_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+        SNOWSQL_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+        SNOWSQL_ROLE: ${{ secrets.SF_ROLE }}
+      run: |
+        ~/.snowsql/snowsql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -r $SNOWSQL_ROLE -w $SNOWSQL_WAREHOUSE -q "SELECT CURRENT_VERSION();"
+
+    - name: 🚀 Run scraper and upload CSV
+      run: python scraper.py
